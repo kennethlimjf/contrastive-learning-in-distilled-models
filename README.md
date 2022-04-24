@@ -39,10 +39,7 @@ $ apt-get update && apt-get install texlive-latex-base texlive-fonts-recommended
 2. Generate LaTeX Report:
 
 ```bash
-pdflatex main
-bibtex main
-pdflatex main
-pdflatex main
+make report
 ```
 
 Referenced from [Bibliography_management_with_bibtex](https://www.overleaf.com/learn/latex/Bibliography_management_with_bibtex)
