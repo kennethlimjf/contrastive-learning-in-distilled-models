@@ -11,7 +11,6 @@ from functools import reduce
 
 POOLER_TYPES = ['cls',
                 'avg',
-                'last_hidden',
                 'last_second_hidden',
                 'avg_all_hidden',
                 'avg_second_to_last_hidden',
@@ -42,11 +41,9 @@ class Pooler(nn.Module):
             return last_hidden[:, 0]
         elif self.pooler_type == "avg":
             return ((last_hidden * attention_mask.unsqueeze(-1)).sum(1) / attention_mask.sum(-1).unsqueeze(-1))
-        elif self.pooler_type == "last_hidden":
-            return last_hidden
         elif self.pooler_type == "last_second_hidden":
             second_last_hidden = hidden_states[-2]
-            return second_last_hidden
+            return ((second_last_hidden * attention_mask.unsqueeze(-1)).sum(1) / attention_mask.sum(-1).unsqueeze(-1))
         elif self.pooler_type == "avg_all_hidden":
             pooled_output = torch.stack(outputs.hidden_states).mean(0)
             pooled_result = (pooled_output * attention_mask.unsqueeze(-1)).sum(1) / attention_mask.sum(-1).unsqueeze(-1)
