@@ -9,6 +9,7 @@ mlruns/
 output/
 runs/
 tmp_trainer/
+logs/
 
 # C extensions
 *.so
