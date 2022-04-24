@@ -12,7 +12,23 @@
 And we're good to go! Distilled Face :)
 
 
-## 2. LaTEX Setup
+## 2. Notebooks and Source Code
+
+1. Source code for modules required by DistilFACE can be found in:
+
+- `src/distilface/modules/pooler.py`
+- `src/distilface/modules/similarity.py`
+
+2. Main DistilFACE model implementation can be found in the notebooks in folder:
+
+- Section 2 of `notebooks/training/*.ipynb`
+
+3. Hyperparameter tuning results can be found in all the notebooks in:
+
+- Section 4 of `notebooks/training/*.ipynb`
+
+
+## 3. LaTEX Setup
 
 1. Install required binaries:
 
