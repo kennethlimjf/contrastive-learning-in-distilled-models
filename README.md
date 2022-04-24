@@ -12,13 +12,21 @@
 And we're good to go! Distilled Face :)
 
 
-## 2. Todo
+## 2. LaTEX Setup
 
-- Discuss entire paper outline
-- Finalize training and evaluation methodology
-- Add logging training metrics on tensorboard for monitoring
-    - loss graph by steps
-    - spearman corr eval at every n steps
-- Hyperparameter tuning
-    - Establish default set of hyperparameters
-    - Discuss params to tune and range of values
+1. Install required binaries:
+
+```bash
+$ apt-get update && apt-get install texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-bibtex-extra
+```
+
+2. Generate LaTeX Report:
+
+```bash
+pdflatex main
+bibtex main
+pdflatex main
+pdflatex main
+```
+
+Referenced from [Bibliography_management_with_bibtex](https://www.overleaf.com/learn/latex/Bibliography_management_with_bibtex)

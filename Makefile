@@ -14,3 +14,11 @@ clean:
 	rm -rf `find -type d -name .ipynb_checkpoints`
 	rm -rf .mypy_cache/ .pytest_cache/
 	rm -rf data/text data/._data*
+
+report:
+	cd latex && \
+		bash -c "rm -rf main.{aux,bbl,blg,log,pdf}" && \
+		pdflatex main && \
+		bibtex main  && \
+		pdflatex main && \
+		pdflatex main
