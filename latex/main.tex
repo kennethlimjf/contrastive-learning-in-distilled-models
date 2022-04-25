@@ -1,5 +1,7 @@
 \documentclass[10pt,twocolumn,letterpaper]{article}
 
+\usepackage{appendix}
+\usepackage{etoolbox}
 \usepackage{times}
 \usepackage{epsfig}
 \usepackage{graphicx}
@@ -15,6 +17,8 @@
     urlcolor=blue,
     citecolor=black,
 ]{hyperref}
+
+\BeforeBeginEnvironment{appendices}{\clearpage}
 
 \title{Distilling Contrastive Learning Models}
 \author{
@@ -99,12 +103,12 @@ Pre-trained DistilBERT model with initial checkpoints from Transformers Hub is d
 
 DistilFACE model is trained using Wiki 1M sampled dataset obtained from SimCSE. With reference to common hyper-parameters used by previous works in BERT, DistilBERT, and SimCSE, we started with a default set of hyperparameters in this study shown in table below:
 
-\begin{figure}[hbt!]
+\begin{table}[hbt!]
 \centering
 \includegraphics[scale=0.57]{images/Default-Hyperparameters.png}
 \caption{Default Hyperparameters}
 \label{fig:short}
-\end{figure}
+\end{table}
 
 A grid search is performed to find the optimal set of hyperparameters, more explanation can be found in the Results \& Analysis section. In grid search, we also perform evaluation to understand the effect of hyperparameters on STS task performance.
 
@@ -112,7 +116,7 @@ A grid search is performed to find the optimal set of hyperparameters, more expl
 
 In the evaluation phase, we used STS-12, STS-13, STS-14, STS-15 and STS-B as our evaluation set for measuring model performance on semantic tasks. Following the methodology in SimCSE, the SentEval engine by Conneau et. al. \cite{1803.05449} was mainly used to evaluate model performance on these evaluation datasets, and Spearman Correlation is used as the evaluation metric. This metric helps us to determine the quality of the sentence embeddings produced for determining semantic similarity.
 
-To ensure our Spearman correlation results are comparable with SimCSE, the final spearman correlation score for each dataset is calculated by first concatenating all subsets of data within the STS dataset, and then calculating Spearman correlation once, similar to the approach by SimCSE. This is slightly different from the default calculation from SentEval, which takes the average of Spearman correlation scores for each data subset within each STS dataset.
+To ensure our Spearman correlation results are comparable with SimCSE, the final Spearman correlation score for each dataset is calculated by first concatenating all subsets of data within the STS dataset, and then calculating Spearman correlation once, similar to the approach by SimCSE. This is slightly different from the default calculation from SentEval, which takes the average of Spearman correlation scores for each data subset within each STS dataset.
 
 To measure success, after hyperparameter tuning is complete, the best hyperparameters will be used with max steps tuned to adjust for overfitting in the evaluation set. Spearman Correlation scores for the final DistilFACE will be compared with other models such as BERT, DistilBERT and SimCSE. 
 
@@ -133,9 +137,14 @@ We compare the evaluation results of our final DistilFACE model with other model
 \label{fig:short}
 \end{figure}
 
-From the above, we can clearly see that our application of contrastive learning to DistilBERT has been clearly successful based on our primary success metric of improved performance across STS tasks. DistilFACE was able to perform on average 34.2\% and 23.8\% higher in Spearman Correlation compared to BERT and DistilBERT respectively. We have also achieved our secondary goal of building a lightweight model, since DistilFACE, which is based on DistilBERT, is significantly smaller and faster than BERT (shown in figure below).
+From the above, we can clearly see that our application of contrastive learning to DistilBERT has been clearly successful based on our primary success metric of improved performance across STS tasks. DistilFACE was able to perform on average 34.2\% and 23.8\% higher in Spearman Correlation compared to BERT and DistilBERT respectively. We have also achieved our secondary goal of building a lightweight model, since DistilFACE, which is based on DistilBERT, is significantly smaller and faster than BERT \cite{1910.01108} (shown in figure below).
 
-\{Insert Table here\}
+\begin{table}[hbt!]
+\centering
+\includegraphics[scale=0.57]{images/Bert-distilbert-comparison.png}
+\caption{Difference in size and inference time between BERT and DistillBERT. Inference time of a full pass of STS-B on CPU with batch size of 1}
+\label{fig:short}
+\end{table}
 
 We believe that our experiments were successful for two key reasons. The first is that our hypothesis in section 2.3 that the properties of contrastive learning are compatible with DistilBERT is logically sound. The second is effective hyperparameter tuning and experimentation with pooling methods enabled good performance. We detail the results and analysis of that process below.
 
@@ -166,21 +175,21 @@ Hence, we instead adopt the grid-search methodology adopted by the authors in \c
 
 \subsection{Learning Rate}
 
-Learning rates of 1e-5, 3e-5 and 5e-5 were selected as hyperparameter values as adapted from \cite{2104.08821}. Learning rate of 1e-5 is chosen as it resulted in the best average spearman correlation across the 5 datasets. As evident in Figure <>, the larger the learning rate, the greater the spearman correlation.
+Learning rates of 1e-5, 3e-5 and 5e-5 were selected as hyperparameter values as adapted from \cite{2104.08821}. Learning rate of 1e-5 is chosen as it resulted in the best average Spearman correlation across the 5 datasets, as highlighted in the yellow bar (see Figure 5 in appendix B). The figure also shows that smaller the learning rate, the greater the Spearman correlation.
 
 \subsection{Similarity Temperature}
 
-Temperatures of 0.001, 0.01, 0.05, 0.1, 1 were tested, with 0.05 being chosen as it resulted in the best average spearman correlation across the 5 datasets, as shown in Figure <>.  This parameter scales the inner product between two normed feature embeddings\cite{2112.01642} when calculating the training objective. t temperature controls how sensitive the objective is to specific embedding locations \cite{2110.04403}, and as such this value needs to be neither too large nor small, and in this scenario optimally at 0.05.
+Temperatures of 0.001, 0.01, 0.05, 0.1, 1 were tested, with 0.05 being chosen as it resulted in the best average Spearman correlation across the 5 datasets, as shown in Figure <>.  This parameter scales the inner product between two normed feature embeddings\cite{2112.01642} when calculating the training objective. Temperature controls how sensitive the objective is to specific embedding locations \cite{2110.04403}. As such this value needs to be neither too large nor small, and in this scenario optimally at 0.05, as highlighted in the yellow bar (see Figure 6 in appendix B).
 
 \subsection{Batch Size}
 
-Batch sizes of 64, 128, 256 were tested. Batch size of 128 is chosen as it resulted in the best average spearman correlation across the 5 datasets, as shown in Figure <>. However, as can also be seen from this figure, the model is not too sensitive to batch sizes provided a suitable learning rate is used, consistent with the findings from \cite{2104.08821}. This provides further validates that contrastive learning need not require very large batch sizes \cite{2104.08821}, unlike what was previously thought\cite{2002.05709}. This also further supports our overarching hypothesis that contrastive learning is suitable to be applied to more light weight models.
+Batch sizes of 64, 128, 256 were tested. Batch size of 128 is chosen as it resulted in the best average Spearman correlation across the 5 datasets, as highlighted in the yellow bar (see Figure 8 in appendix B). However, as can also be seen from this figure, the model is not too sensitive to batch sizes provided a suitable learning rate is used, consistent with the findings from \cite{2104.08821}. This provides further validates that contrastive learning need not require very large batch sizes \cite{2104.08821}, unlike what was previously thought\cite{2002.05709}. This also further supports our overarching hypothesis that contrastive learning is suitable to be applied to more light weight models.
 
 \subsection{Pooling Methods}
 
-We experimented with various pooling methods taking reduce functions: average and max, as well as the selection of hidden layers: last hidden, second-to-last, all hidden, first and last, last two, last four and concatenation of last four layers. Our findings are as follows:
+We experimented with various pooling methods taking reduce functions: average and max, as well as the selection of hidden layers: last hidden, second-to-last, all hidden, first and last, last two, last four and concatenation of last four layers (see Figure 9 in appendix B). Our findings are as follows:
 
-\textit{Best Pooling Methods.} Concat and average of the last four layers were the best two performing pooling methods. This is consistent with BERT \cite{1907.11692} where concat of the last four layers worked best for them.
+\textit{Best Pooling Methods.} Concat and average of the last four layers were the best two performing pooling methods, as highlighted in the yellow bar. This is consistent with BERT \cite{1907.11692} where concatenation of the last four layers worked best for them.
 
 \textit{Next Best Pooling Methods.} Authors \cite{li-etal-2020-sentence} \cite{https://doi.org/10.48550/arxiv.1908.10084} mentioned that taking the average of first and last leads to better results. We find this consistent with our results with average of first and last to be one of the better performing pooling methods out of all we have experimented.
 
@@ -193,6 +202,42 @@ We experimented with various pooling methods taking reduce functions: average an
 \section{Conclusion}
 
 Overall, we believe our project to be a success using the success metrics  in section 4.1, namely Spearman Correlation on STS tasks. This can be seen from the results and rationale in section 5 . Hence we hope our DistilFACE model can help lay the groundwork for future work involving building lightweight models for such tasks using contrastive and knowledge distillation.
+
+
+%%%%%%%%% CONCLUSION
+\begin{appendices}
+        \section{Project Code Repository}
+        The Github repository for our final project is at:
+        \section{Charts}
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.3]{images/Results-Evaluation-Score-by-Learning-Rate.png}
+\caption{Spearman Corr. by Learning Rate on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.30]{images/Results-Evaluation-Score-by-Temp.png}
+\caption{Spearman Corr. by Similarity Temperature on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.30]{images/Results-Evaluation-Score-by-Batch-Size.png}
+\caption{Spearman Corr. by Batch Size on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.35]{images/Results-Evaluation-Score-by-Pooling-Methods.png}
+\caption{Spearman Corr. by Pooling Methods on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\end{appendices}
 
 %%%%%%%%% REFERENCES
 
