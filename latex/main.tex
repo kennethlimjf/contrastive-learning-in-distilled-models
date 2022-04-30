@@ -66,7 +66,7 @@ SimCSE \cite{2104.08821} presented a simple contrastive learning framework that 
 
 \subsection{Knowledge Distillation Models}
 
-In our present work, contrastive learning is applied on a distilled version of BERT, DistilBERT. Sanh et. al \cite{1910.01108} was able to reduce BERT model size by 40\% while retaining 97\% of language understanding capabilities by leveraging on knowledge distillation. DistilBERT is able to retain a significant extent of model performance despite a huge reduction of memory footprint because of the benefits conferred from knowledge distillation. In knowledge distillation, DistilBERT is known as the student, while BERT is known as the teacher. Both have the same architecture. For instance, given this sample input sentence ``the \textless mask \textgreater licked its fur and howled'', the teacher model outputs ``dog'' as the mask, but ``wolf'' and ``fox'' also have high scores. The distillation loss between the teacher and the student aims to align the probability distributions, rather than just the hard predictions, which is the output from the teacher model. The probability distribution is a useful addition as the student is able to learn to rank ``wolf'' and ``dog'' highly, which is useful info about the world \cite{1910.01108}.
+In our present work, contrastive learning is applied on a distilled version of BERT, DistilBERT. Sanh et. al \cite{1910.01108} was able to reduce BERT model size by 40\% while retaining 97\% of language understanding capabilities by leveraging on knowledge distillation. DistilBERT is able to retain a significant extent of model performance despite a huge reduction of memory footprint because of the benefits conferred from knowledge distillation. In knowledge distillation, DistilBERT is known as the student, while BERT is known as the teacher. Both have the same architecture. For instance, given this sample input sentence ``the \textless mask \textgreater licked its fur and howled'', the teacher model outputs ``dog'' as the mask, but ``wolf'' and ``fox'' also have high scores. The distillation loss between the teacher and the student aims to align the probability distributions, rather than just the hard predictions, which is the output from the teacher model. The probability distribution is a useful addition as the student is able to learn to rank ``wolf'' and ``dog'' highly, which is useful info about the world \cite{gatech2}.
 
 \subsection{Combining Contrastive Learning with Knowledge Distillation}
 
@@ -200,16 +200,25 @@ We experimented with various pooling methods taking reduce functions: average an
 Overall, we believe our project to be a success using the success metrics  in section 4.1, namely Spearman Correlation on STS tasks. This can be seen from the results and rationale in section 5 . Hence we hope our DistilFACE model can help lay the groundwork for future work involving the building of lightweight models for such tasks using contrastive learning and knowledge distillation.
 
 
-%%%%%%%%% CONCLUSION
+%%%%%%%%% REFERENCES
+
+\small{
+\bibliographystyle{bibstyle}
+\bibliography{refs}
+}
+
+
+%%%%%%%%% APPENDIX
 \begin{appendices}
-        \section{Project Code Repository}
-        The Github repository for our final project is at: \url{https://github.com/kennethlimjf/contrastive-learning-in-distilled-models}
-        \section{Tables and Charts}
+
+\section{Project Code Repository}
+The Github repository for our final project is at: \url{https://github.com/kennethlimjf/contrastive-learning-in-distilled-models}
+\section{Tables and Charts}
 
 \begin{table}[hbt!]
 \centering
 \includegraphics[scale=0.57]{images/Bert-distilbert-comparison.png}
-\caption{Difference in number of parameters and inference time between BERT and DistillBERT. Inference time of a full pass of STS-B on CPU with batch size of 1}
+\caption{Difference in number of parameters and inference time between BERT and DistillBERT from \cite{1910.01108}. Inference time of a full pass of STS-B on CPU with batch size of 1}
 \label{fig:short}
 \end{table}
 
@@ -248,13 +257,12 @@ Overall, we believe our project to be a success using the success metrics  in se
 \label{fig:short}
 \end{figure}
 
+\begin{table}[hbt!]
+\includegraphics[scale=0.57]{images/Contributions.png}
+\caption{Team member contributions}
+\label{fig:short}
+\end{table}
+
 \end{appendices}
-
-%%%%%%%%% REFERENCES
-
-\small{
-\bibliographystyle{bibstyle}
-\bibliography{refs}
-}
 
 \end{document}
