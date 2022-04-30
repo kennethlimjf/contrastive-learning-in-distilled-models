@@ -20,16 +20,16 @@
 
 \BeforeBeginEnvironment{appendices}{\clearpage}
 
-\title{Distilling Contrastive Learning Models}
+\title{\vspace{-2.0cm}Distilling Contrastive Learning Models}
 \author{
 Valerie Lim \\ {\tt\small vlim31@gatech.edu}
 \and
 Kai Wen Ng \\ {\tt\small kng71@gatech.edu}
 \and
 Kenneth Lim \\ {\tt\small klim83@gatech.edu}
-\date{\today}
 }
 
+\date{\vspace{-5ex}}
 
 \begin{document}
 
@@ -37,7 +37,7 @@ Kenneth Lim \\ {\tt\small klim83@gatech.edu}
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-    Pretrained word embedding Natural Language Processing (NLP) models like BERT can provide state of the art results for many NLP tasks, but the area of Semantic Textual Similarity (STS) is a notable exception. Contrastive learning has been shown to help improve the quality of sentence embeddings produced, but these models are often large, since they use BERTbase or RoBERTa as pretrained models. Knowledge distillation meanwhile could address this by making models more lightweight. Hence, to reap both of these benefits, we seek to apply a suitable contrastive learning method based on the SimCSE paper, to a model architecture adapted from a knowledge distillation based model, DistilBERT, in an unsupervised setting. We also engage in extensive hyperparameter tuning, plus experiment with different pooling layers,automatic mixed precision and quantization to boost performance and efficiency. Our final lightweight model DistilFACE achieves an average of 72.1 in Spearman’s correlation on STS tasks, a 34.2\% improvement over BERTbase with default parameters.
+    Natural Language Processing (NLP) models like BERT can provide state of the art word embeddings for downstream NLP tasks. However, these models: (1) yet to perform well on Semantic Textual Similarity (STS), and (2) may be too large to be deployed as lightweight edge applications. We seek to apply a suitable contrastive learning method based on the SimCSE paper, to a model architecture adapted from a knowledge distillation based model, DistilBERT, to address these two issues. Our final lightweight model DistilFACE achieves an average of 72.1 in Spearman’s correlation on STS tasks, a 34.2\% improvement over BERTbase with default parameters.
 \end{abstract}
 
 
@@ -53,12 +53,12 @@ However, studies \cite{2104.08821} \cite{2105.11741} have shown that BERT does n
 Yet, a problem often associated with BERT and the contrastive loss models derived off it is their large size. There is an increasing need to build machine learning systems that can operate on the edge, instead of calling a cloud API, in order to build privacy respecting systems and prevent having users send sensitive information to servers \cite{10.3390/s22020450}. Thus, there is a growing impetus for lightweight and responsive models. However, most of the pre-trained models \cite{2104.08821} \cite{2105.11741} with contrastive loss are still relatively large and computationally heavy, making it hard to deploy on the edge. Deployment on the edge would also allow for reduced time and network latency, which could be critical in certain use cases such as when there is a high QOS (Quality of Service) requirement \cite{10.3390/s22020450}. A common solution for creating lighter models is via knowledge distillation, where a trained, complex teacher model trains  a lighter, shallower student model to generalise \cite{1910.01108}.
 Hence, our goal was to address this joint problem of lack of lightweight models that can perform well on semantic textual similarity tasks, by creating an unsupervised pretrained model that combines knowledge distillation and contrastive learning to address their respective problems.  To do this, we first adopt the architecture and pre-trained checkpoints of a knowledge distillation based model, DistilBERT, to reduce the size of our model. We then adapt from authors who successfully implemented contrastive learning on sentence embeddings via unsupervised learning \cite{2104.08821}, by feeding samples, termed as \(x\), into the pre-trained encoder twice: by applying standard dropout twice to obtain two different sets of embeddings termed as \(x+\). Then we take other sentences in the same mini-batch as \(x-\) and the model predicts the positive sample among the negatives. (adapt SimCSE Fig 1a). We subsequently experiment with different pooling layers, automatic mixed precision, quantization and hyperparameter tuning to enhance performance.
 
-\subsection{Implications}
+\subsection{Who Cares? The Implications}
 
 Our group believes there is significant value in experimenting with whether a traditional knowledge distillation method like DistilBERT, can be directly adapted to be combined with an existing contrastive learning method such as SimCSE, without having to create an entirely new model. Such an approach makes such a combination of techniques more accessible. In addition, there are definitely environmental and economical benefits to doing so, given how computational intensive large-scale pretraining of new models are. For instance, 16 TPU chips were required to train BERTbase, with each round of pretraining taking 4 days \cite{1810.04805}, costing about US\$6,912 each time \cite{cost.sota.ai}. Furthermore, success in our project will enable the creation of lightweight pre-trained embedding-based models that work well in semantic textual similarity tasks. This has many applications, such as searching and ranking of relevant documents based on similarity \cite{robust.sts}, and now it could be even further applied in edge scenarios. For example, such functionality can now be enabled at sensitive government, defence or health institutions, where computers are not always allowed to be connected to the cloud freely \cite{1910.01108}.
 
 %%%%%%%%% RELATED WORK
-\section{Related Work}
+\section{How Is It Done Today and Limits}
 
 \subsection{Contrastive Learning Models}
 
@@ -79,15 +79,15 @@ There has been some work done today to combine the two techniques.  The Contrast
 The original authors of BERT \cite{1810.04805} experimented with different pooling strategies and the top three performers were concat last 4, weighted sum of last four hidden and second-to-last hidden. However, these were on fine-tuned tasks and may not be good benchmarks for semantic quality of sentence representations. Han Xiao \cite{bert.as.service} claims that the last layer is too close to the target function and is biased towards the pre-training task targets and hence, argues that the second-to-last layer is a better sentence representation. Other studies \cite{li-etal-2020-sentence} and  \cite{https://doi.org/10.48550/arxiv.1908.10084} showed that taking average of first and last layers leads to better sentence representations. In this study, we also aim to experiment with various pooling methods to contribute more data for the research community on which pooling method works best.
 
 %%%%%%%%% SOLUTION
-\section{Solution}
+\section{Approach}
 
-As DistilBERT proved to be promising in reducing memory footprint with minimal loss in language understanding, we decided to start off with an initial evaluation benchmark for BERT and DistilBERT. We evaluated these two models on Semantic Textual Similarity (STS) tasks using Spearman Correlation score as the main evaluation metric. Surprisingly, results showed that pretrained DistilBERT had consistently outperformed pretrained BERT on STS tasks. BERT scored an average of 53.73, while DistilBERT scored an average of 58.23. This shows DistilBERT to be a promising candidate as a pre-trained model to be used in our experiment.
+As DistilBERT proved to be promising in reducing memory footprint with minimal loss in language understanding, we decided to start off with an initial evaluation benchmark for BERT and DistilBERT. We evaluated these two models on Semantic Textual Similarity (STS) tasks using Spearman Correlation score as the main evaluation metric. Surprisingly, results showed that pretrained DistilBERT had consistently outperformed pretrained BERT on STS tasks. BERT scored an average of 53.73, while DistilBERT scored an average of 58.23. Hence, we think DistilBERT is a promising candidate and can be successful in achieving our goals.
 
 We adopted a similar approach to unsupervised SimCSE \cite{2104.08821} in applying contrastive learning to pre-trained language models. To perform contrastive learning in self-supervised fashion, we take sentences \(\{x_i\}^m_{i=1}\) and use respective \(x_i\) as \(x_i^+\). During forward pass, dropouts from DistilBERT encoder is applied, resulting in embeddings that are similar but not identical for each pair of \(x_i\) and \(x_i^+\). We can denote these two embeddings as \(h_i^{z} = f(x_i, z)\) and \(h_i^{z'} = f(x_i, z')\) where \(z\) and \(z'\) are two different random dropout masks applied on \(x_i\). The cosine similarity is calculated for positive pairs \(x_i\) and \(x_i^+\), and negative pairs \(x_i\) and \(x_j^+\). Finally, our training loss for contrastive learning is computed as:
 
 \[ \ell_i = -log \frac{e^{sim(h_i, h_i^+)/\tau}}{\sum_{j=1}^N e^{sim(h_i, h_j^+)/\tau}} \]
 
-where \( \tau \) is a temperature hyperparameter that can be tuned for improving model performance. Here, minimizing the loss function will result in maximizing the similarity between positive pairs (increasing the numerator), and minimising the similarity between negative pairs (decreasing the denominator). The overall contrastive learning architecture using DistilBERT is shown below:
+where \( \tau \) is a temperature hyperparameter that can be tuned for improving model performance. Here, minimizing the loss function will result in maximizing the similarity between positive pairs (increasing the numerator), and minimising the similarity between negative pairs (decreasing the denominator). Using contrastive loss function, the 66M learned parameters of DistilBERT will be tuned. The overall contrastive learning architecture using DistilBERT is shown below:
 
 \begin{figure}[hbt!]
 \centering
@@ -96,12 +96,19 @@ where \( \tau \) is a temperature hyperparameter that can be tuned for improving
 \label{fig:short}
 \end{figure}
 
+\subsection{Training Dataset: Wiki 1M}
+DistilFACE model is trained using Wiki 1M sampled dataset obtained from SimCSE. The Wiki 1M dataset was derived from the original English Wikipedia dataset through random sampling. Each row in the dataset is a sentence from Wikipedia articles. This is chosen as the dataset for training because authors of SimCSE \cite{2104.08821} found that such NLI datasets are effectively for learning sentence embeddings. 
+
+\subsection{Evaluation Dataset: STS Task Datasets}
+
+In the evaluation phase, we used STS-12, STS-13, STS-14, STS-15 and STS-B as our evaluation set for measuring model performance on semantic tasks. Each row in STS Task datasets contains a pair of sentences. For each pair, it is manually labelled with a score ranging from 0 to 5 to indicate how similiar or relevant the pair of sentence is to each other. We chose to use this dataset for evaluation since it has been widely used as a benchmark for STS performance.
+
 %%%%%%%%% METHODOLOGY
 \section{Methodology}
 
 Pre-trained DistilBERT model with initial checkpoints from Transformers Hub is downloaded and used as the starting point for applying contrastive learning on DistilBERT.
 
-DistilFACE model is trained using Wiki 1M sampled dataset obtained from SimCSE. With reference to common hyper-parameters used by previous works in BERT, DistilBERT, and SimCSE, we started with a default set of hyperparameters in this study shown in table below:
+With reference to common hyper-parameters used by previous works in BERT, DistilBERT, and SimCSE, we started with a default set of hyperparameters in this study shown in table below:
 
 \begin{table}[hbt!]
 \centering
@@ -114,7 +121,7 @@ A grid search is performed to find the optimal set of hyperparameters, more expl
 
 \subsection{Success Metrics}
 
-In the evaluation phase, we used STS-12, STS-13, STS-14, STS-15 and STS-B as our evaluation set for measuring model performance on semantic tasks. Following the methodology in SimCSE, the SentEval engine by Conneau et. al. \cite{1803.05449} was mainly used to evaluate model performance on these evaluation datasets, and Spearman Correlation is used as the evaluation metric. This metric helps us to determine the quality of the sentence embeddings produced for determining semantic similarity.
+Following the methodology in SimCSE, the SentEval engine by Conneau et. al. \cite{1803.05449} was mainly used to evaluate model performance on these evaluation datasets, and Spearman Correlation is used as the evaluation metric. This metric helps us to determine the quality of the sentence embeddings produced for determining semantic similarity.
 
 To ensure our Spearman correlation results are comparable with SimCSE, the final Spearman correlation score for each dataset is calculated by first concatenating all subsets of data within the STS dataset, and then calculating Spearman correlation once, similar to the approach by SimCSE. This is slightly different from the default calculation from SentEval, which takes the average of Spearman correlation scores for each data subset within each STS dataset.
 
@@ -161,6 +168,8 @@ These are the hyperparameters that we tuned: Similarity Temperature, Batch Size,
 \caption{Spearman Corr. by Steps on STS datasets}
 \label{fig:short}
 \end{figure}
+
+We tuned the final model based on the max steps to avoid overfitting as well. As shown in the figure above, we can see DistilFACE starts to overfit at 20,000 steps and above. Hence, the best max steps for our final model is at 20,000.
 
 \subsection{Challenges Faced}
 
