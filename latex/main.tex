@@ -132,12 +132,12 @@ We also managed to further reduce the model's size by 52\% through quantization.
 
 We compare the evaluation results of our final DistilFACE model with other models:
 
-\begin{figure}[hbt!]
+\begin{table}[hbt!]
 \centering
 \includegraphics[scale=0.4]{images/Results-Compare-Models.png}
 \caption{Comparison of Model Performances}
 \label{fig:short}
-\end{figure}
+\end{table}
 
  We can see that our application of contrastive learning to DistilBERT has been clearly successful, with DistilFACE performing on average 34.2\% and 23.8\% higher in Spearman Correlation compared to BERT and DistilBERT respectively. We have also achieved our secondary goal of building a lightweight model, since DistilFACE, which is based on DistilBERT, is significantly smaller and faster than BERT \cite{1910.01108} (shown in Appendix Table 2).  In fact, DistilFace and quantized DistilFACE are respectively 1.64 and 3.15 times smaller than the BERT implementation (shown in Appendix Table 3). 
 
@@ -148,12 +148,12 @@ We believe that our experiments were successful for two key reasons. The first, 
 
 These are the hyperparameters that we tuned: Similarity Temperature, Batch Size, Learning Rate and Pooling Method. Each hyperparameter is tested against their selected set of values, which are adapted from \cite{2104.08821}. The optimal hyperparameters and evaluation score by training steps is shown below:
 
-\begin{figure}[hbt!]
+\begin{table}[hbt!]
 \centering
 \includegraphics[scale=0.60]{images/Optimal-Hyperparameters.png}
 \caption{Optimal Hyperparameters for Final DistilFACE}
 \label{fig:short}
-\end{figure}
+\end{table}
 
 \begin{figure}[hbt!]
 \centering
