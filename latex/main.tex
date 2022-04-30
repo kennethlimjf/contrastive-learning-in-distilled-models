@@ -20,7 +20,7 @@
 
 \BeforeBeginEnvironment{appendices}{\clearpage}
 
-\title{\vspace{-2.0cm}Distilling Contrastive Learning Models}
+\title{\vspace{-2.0cm}Contrastive Learning in Distilled Models}
 \author{
 Valerie Lim \\ {\tt\small vlim31@gatech.edu}
 \and
@@ -51,7 +51,7 @@ Pre-trained word embeddings are a vital part of natural language processing (NLP
 However, studies \cite{2104.08821} \cite{2105.11741} have shown that BERT does not produce good enough embeddings for semantic textual similarity tasks. As a result, recent breakthroughs \cite{2104.08821} \cite{1907.11692} have found that a contrastive objective is able to address the anisotropy issue of BERT. At a high level, contrastive learning is a technique where given two augmented samples of \(x\), \(x+\) (positive sample), \(x-\) (negative sample), we'd like for \(x+\) to be close to \(x\) and for \(x-\) to be far away from \(x\). This improves the quality of BERT sentence representation. 
 
 Yet, a problem often associated with BERT and the contrastive loss models derived off it is their large size. There is an increasing need to build machine learning systems that can operate on the edge, instead of calling a cloud API, in order to build privacy respecting systems and prevent having users send sensitive information to servers \cite{10.3390/s22020450}. Thus, there is a growing impetus for lightweight and responsive models. However, most of the pre-trained models \cite{2104.08821} \cite{2105.11741} with contrastive loss are still relatively large and computationally heavy, making it hard to deploy on the edge. Deployment on the edge would also allow for reduced time and network latency, which could be critical in certain use cases such as when there is a high QOS (Quality of Service) requirement \cite{10.3390/s22020450}. A common solution for creating lighter models is via knowledge distillation, where a trained, complex teacher model trains  a lighter, shallower student model to generalise \cite{1910.01108}.
-Hence, our goal was to address this joint problem of lack of lightweight models that can perform well on semantic textual similarity tasks, by creating an unsupervised pretrained model that combines knowledge distillation and contrastive learning to address their respective problems.  To do this, we first adopt the architecture and pre-trained checkpoints of a knowledge distillation based model, DistilBERT, to reduce the size of our model. We then adapt from authors who successfully implemented contrastive learning on sentence embeddings via unsupervised learning \cite{2104.08821}, by feeding samples, termed as \(x\), into the pre-trained encoder twice: by applying standard dropout twice to obtain two different sets of embeddings termed as \(x+\). Then we take other sentences in the same mini-batch as \(x-\) and the model predicts the positive sample among the negatives. (adapt SimCSE Fig 1a). We subsequently experiment with different pooling layers, automatic mixed precision, quantization and hyperparameter tuning to enhance performance.
+Hence, our goal was to address this joint problem of lack of lightweight models that can perform well on semantic textual similarity tasks, by creating an unsupervised pretrained model that combines knowledge distillation and contrastive learning to address their respective problems.  To do this, we first adopt the architecture and pre-trained checkpoints of a knowledge distillation based model, DistilBERT, start off with a lightweight model. We then adapt from authors who successfully implemented contrastive learning on sentence embeddings via unsupervised learning \cite{2104.08821}, by feeding samples, termed as \(x\), into the pre-trained encoder twice: by applying standard dropout twice to obtain two different sets of embeddings termed as \(x+\). Then we take other sentences in the same mini-batch as \(x-\) and the model predicts the positive sample among the negatives. We subsequently experiment with different pooling layers, automatic mixed precision, quantization and hyperparameter tuning to enhance performance.
 
 \subsection{Who Cares? The Implications}
 
@@ -87,7 +87,7 @@ We adopted a similar approach to unsupervised SimCSE \cite{2104.08821} in applyi
 
 \[ \ell_i = -log \frac{e^{sim(h_i, h_i^+)/\tau}}{\sum_{j=1}^N e^{sim(h_i, h_j^+)/\tau}} \]
 
-where \( \tau \) is a temperature hyperparameter that can be tuned for improving model performance. Here, minimizing the loss function will result in maximizing the similarity between positive pairs (increasing the numerator), and minimising the similarity between negative pairs (decreasing the denominator). Using contrastive loss function, the 66M learned parameters of DistilBERT will be tuned. The overall contrastive learning architecture using DistilBERT is shown below:
+where \( \tau \) is a temperature hyperparameter that can be tuned for improving model performance. Here, minimizing the loss function will result in maximizing the similarity between positive pairs (increasing the numerator), and minimising the similarity between negative pairs (decreasing the denominator). Using contrastive loss function, the 66M learned parameters of DistilBERT will be tuned. The overall contrastive learning architecture using DistilBERT is shown in Figure 1 below:
 
 \begin{figure}[hbt!]
 \centering
@@ -97,11 +97,11 @@ where \( \tau \) is a temperature hyperparameter that can be tuned for improving
 \end{figure}
 
 \subsection{Training Dataset: Wiki 1M}
-DistilFACE model is trained using Wiki 1M sampled dataset obtained from SimCSE. The Wiki 1M dataset was derived from the original English Wikipedia dataset through random sampling. Each row in the dataset is a sentence from Wikipedia articles. This is chosen as the dataset for training because authors of SimCSE \cite{2104.08821} found that such NLI datasets are effectively for learning sentence embeddings. 
+DistilFACE model is trained using Wiki 1M sampled dataset obtained from SimCSE. The Wiki 1M dataset was derived from the original English Wikipedia dataset through random sampling. Each row in the dataset is a sentence extracted from Wikipedia articles. This is chosen as the dataset for training because authors of SimCSE \cite{2104.08821} found that such NLI datasets are effective for learning sentence embeddings. 
 
 \subsection{Evaluation Dataset: STS Task Datasets}
 
-In the evaluation phase, we used STS-12, STS-13, STS-14, STS-15 and STS-B as our evaluation set for measuring model performance on semantic tasks. Each row in STS Task datasets contains a pair of sentences. For each pair, it is manually labelled with a score ranging from 0 to 5 to indicate how similiar or relevant the pair of sentence is to each other. We chose to use this dataset for evaluation since it has been widely used as a benchmark for STS performance.
+In the evaluation phase, we used STS-12, STS-13, STS-14, STS-15 and STS-B as our evaluation set for measuring model performance on semantic tasks. Each row in STS Task datasets contains a pair of sentences. Each pair is manually labelled with a score ranging from 0 to 5 to indicate how similiar or relevant the pair of sentence is to each other. We chose to use this dataset for evaluation since it has been widely used as a benchmark for STS performance.
 
 %%%%%%%%% METHODOLOGY
 \section{Methodology}
@@ -131,7 +131,7 @@ To measure success, after hyperparameter tuning is complete, the best hyperparam
 
 To make our model even more efficient and require less GPU memory, we also adopted the use of Automatic Mixed Precision (AMP). Instead of always storing weights and biases in 32-bit float format, 16 bit is sometimes used instead, such as when there are. This process of autocasting to lower precision where appropriate reduces wastage of GPU memory. An initial issue faced was that performance was noticeably worse. However, we realized that this was likely due to underflow, as the gradients can become too small to be stored via this format. This can be managed by applying a scaling factor to gradients. The difference made by this scaling factor increased average scores across benchmarks by 8.6\%. Overall, utilizing AMP resulted in a speed up of about 1.4x for training with a batch size of 64, to up to 3.2x for batch size of 256, and meant we needed a maximum of 8GB in GPU memory during our training process, enabling local training in line with our secondary project objectives.
 
-We also managed to further reduce the model's size by 52\% through quantization. This involved converting a floating point model’s weights and activations to reduced precision integers post-training.  However, this reduced model performance by about 6.9\% on average. Hence, we decided to stop pursuing this trade-off further, and instead focus on our core metric of model performance.
+We also managed to further reduce the model's size by 52\% through quantization (refer to Appendix Table 9). This involved converting a floating point model’s weights and activations to reduced precision integers post-training.  However, this reduced model performance by about 6.9\% on average. Hence, we decided to stop pursuing this trade-off further, and instead focus on our core metric of model performance.
 
 
 %%%%%%%%% RESULTS & ANALYSIS
@@ -146,8 +146,7 @@ We compare the evaluation results of our final DistilFACE model with other model
 \label{fig:short}
 \end{table}
 
- We can see that our application of contrastive learning to DistilBERT has been clearly successful, with DistilFACE performing on average 34.2\% and 23.8\% higher in Spearman Correlation compared to BERT and DistilBERT respectively. We have also achieved our secondary goal of building a lightweight model, since DistilFACE, which is based on DistilBERT, is significantly smaller and faster than BERT \cite{1910.01108} (shown in Appendix Table 2).  In fact, DistilFace and quantized DistilFACE are respectively 1.64 and 3.15 times smaller than the BERT implementation (shown in Appendix Table 3). 
-
+ We can see that our application of contrastive learning to DistilBERT has been clearly successful, with DistilFACE performing on average 34.2\% and 23.8\% higher in Spearman Correlation compared to BERT and DistilBERT respectively. We have also achieved our secondary goal of building a lightweight model, since DistilFACE, which is based on DistilBERT, is significantly smaller and faster than BERT \cite{1910.01108} (shown in Appendix Table 8).  In fact, DistilFACE and quantized DistilFACE are respectively 1.64 and 3.15 times smaller than the BERT implementation (shown in Appendix Table 9). 
 
 We believe that our experiments were successful for two key reasons. The first, is that our hypothesis in section 2.3 that the properties of contrastive learning are compatible with DistilBERT is logically sound. The second, is effective hyperparameter tuning and experimentation with pooling methods enabled good performance. We detail the results and analysis of that process below.
 
@@ -169,7 +168,7 @@ These are the hyperparameters that we tuned: Similarity Temperature, Batch Size,
 \label{fig:short}
 \end{figure}
 
-We tuned the final model based on the max steps to avoid overfitting as well. As shown in the figure above, we can see DistilFACE starts to overfit at 20,000 steps and above. Hence, the best max steps for our final model is at 20,000.
+We tuned the final model based on the max steps to avoid overfitting as well. As shown in Figure 2 above, we can see DistilFACE starts to overfit at 20,000 steps and above. Hence, the best max steps for our final model is at 20,000.
 
 \subsection{Challenges Faced}
 
@@ -180,19 +179,19 @@ Hence, we instead adopt the grid-search methodology adopted by the authors in \c
 
 \subsection{Learning Rate}
 
-Learning rates of 1e-5, 3e-5 and 5e-5 were selected as hyperparameter values as adapted from \cite{2104.08821}. Learning rate of 1e-5  resulted in the best average Spearman correlation, as highlighted in the yellow bar in Figure 5, Appendix B. The figure also shows that smaller the learning rate, the greater the Spearman correlation.
+Learning rates of 1e-5, 3e-5 and 5e-5 were selected as hyperparameter values as adapted from \cite{2104.08821}. Learning rate of 1e-5  resulted in the best average Spearman correlation, as highlighted in the yellow bar in Figure 3 and Table 4 in Appendix B. The figure also shows that smaller the learning rate, the greater the Spearman correlation.
 
 \subsection{Similarity Temperature}
 
-Temperatures of 0.001, 0.01, 0.05, 0.1, 1 were tested, with 0.05 achieving the best average Spearman correlation scores. (see as Figure 6 in Appendix B). This parameter scales the inner product between two normed feature embeddings\cite{2112.01642} when calculating the training objective. Temperature controls how sensitive the objective is to specific embedding locations \cite{2110.04403}. As such this value needs to be neither too large nor small, and in this scenario optimally at 0.05, as highlighted in the yellow bar (see Figure 6 in appendix B).
+Temperatures of 0.001, 0.01, 0.05, 0.1, 1 were tested, with 0.05 achieving the best average Spearman correlation scores. (see as Figure 4 and Table 5 in Appendix B). This parameter scales the inner product between two normed feature embeddings\cite{2112.01642} when calculating the training objective. Temperature controls how sensitive the objective is to specific embedding locations \cite{2110.04403}. As such this value needs to be neither too large nor small, and in this scenario optimally at 0.05, as highlighted in the yellow bar (see Figure 4 in Appendix B).
 
 \subsection{Batch Size}
 
-Batch sizes of 64, 128, 256 were tested, with size 128 achieving the best average Spearman correlation scores, as highlighted in the yellow bar (see Figure 7 in Appendix B). However, this figure also shows that the model is not too sensitive to batch sizes if a suitable learning rate is used, consistent with the findings from \cite{2104.08821}. This further validates that contrastive learning need not require very large batch sizes \cite{2104.08821}, unlike what was previously thought\cite{2002.05709}. This also further supports our overarching hypothesis that contrastive learning is suitable to be applied to more light weight models.
+Batch sizes of 64, 128, 256 were tested, with size 128 achieving the best average Spearman correlation scores, as highlighted in the yellow bar (see Figure 5 and Table 6 in Appendix B). However, this figure also shows that the model is not too sensitive to batch sizes if a suitable learning rate is used, consistent with the findings from \cite{2104.08821}. This further validates that contrastive learning need not require very large batch sizes \cite{2104.08821}, unlike what was previously thought\cite{2002.05709}. This also further supports our overarching hypothesis that contrastive learning is suitable to be applied to more light weight models.
 
 \subsection{Pooling Methods}
 
-We experimented with various pooling methods taking reduce functions: average and max, as well as the selection of hidden layers: last hidden, second-to-last, all hidden, first and last, last two, last four and concatenation of last four layers (see Figure 9 in appendix B). Our findings are as follows:
+We experimented with various pooling methods taking reduce functions: average and max, as well as the selection of hidden layers: last hidden, second-to-last, all hidden, first and last, last two, last four and concatenation of last four layers (see Figure 6 and Table 7 in Appendix B). Our findings are as follows:
 
 \textit{Best Pooling Methods.} Concat and average of the last four layers were the best two performing pooling methods, as highlighted in the yellow bar. This is consistent with BERT \cite{1907.11692} where concatenation of the last four layers worked best for them.
 
@@ -201,12 +200,10 @@ We experimented with various pooling methods taking reduce functions: average an
 \textit{Never too close.} Our results show that the last hidden is the third best performing pooling method, better than the second-to-last layer. This discredits the claim from Han Xiao \cite{bert.as.service} that the last layer is too close to pre-trained tasks and the second-to-last layer is a better sentence representation. Here, we find this to be false.
 
 
-
-
 %%%%%%%%% CONCLUSION
 \section{Conclusion}
 
-Overall, we believe our project to be a success using the success metrics  in section 4.1, namely Spearman Correlation on STS tasks. This can be seen from the results and rationale in section 5 . Hence we hope our DistilFACE model can help lay the groundwork for future work involving the building of lightweight models for such tasks using contrastive learning and knowledge distillation.
+Overall, we believe our project to be a success using the success metrics in Section 4.1, namely Spearman Correlation on STS tasks. This can be seen from the results and rationale in Section 5. Hence we hope our DistilFACE model can help lay the groundwork for future work involving the building of lightweight models for such tasks using contrastive learning and knowledge distillation.
 
 
 %%%%%%%%% REFERENCES
@@ -220,9 +217,66 @@ Overall, we believe our project to be a success using the success metrics  in se
 %%%%%%%%% APPENDIX
 \begin{appendices}
 
-\section{Project Code Repository}
-The Github repository for our final project is at: \url{https://github.com/kennethlimjf/contrastive-learning-in-distilled-models}
+\section{Project Code Repository and Results}
+The Github repository for our final project is at: \url{https://github.com/kennethlimjf/contrastive-learning-in-distilled-models}.
+Results can be found in Google Sheets: \href{https://docs.google.com/spreadsheets/d/1OfyPI4u9lc5NnkdpgvJFfPLUDZ8BTxlnjT0_v__VMdE/edit?usp=sharing}{STS Benchmark Results on Google Sheet}
 \section{Tables and Charts}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.3]{images/Results-Evaluation-Score-by-Learning-Rate.png}
+\caption{Spearman Corr. by Learning Rate on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\begin{table}[hbt!]
+\centering
+\includegraphics[scale=0.6]{images/Results-Learning-Rate.png}
+\caption{Spearman Corr. by Learning Rate on STS datasets}
+\label{fig:short}
+\end{table}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.30]{images/Results-Evaluation-Score-by-Temp.png}
+\caption{Spearman Corr. by Similarity Temperature on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\begin{table}[hbt!]
+\centering
+\includegraphics[scale=0.55]{images/Results-Temperature.png}
+\caption{Spearman Corr. by Similarity Temperature on STS datasets}
+\label{fig:short}
+\end{table}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.35]{images/Results-Evaluation-Score-by-Batch-Size.png}
+\caption{Spearman Corr. by Batch Size on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\begin{table}[hbt!]
+\centering
+\includegraphics[scale=0.45]{images/Results-Batch-Size.png}
+\caption{Spearman Corr. by Batch Size on STS datasets}
+\label{fig:short}
+\end{table}
+
+\begin{figure}[hbt!]
+\centering
+\includegraphics[scale=0.35]{images/Results-Evaluation-Score-by-Pooling-Methods.png}
+\caption{Spearman Corr. by Pooling Methods on STS datasets}
+\label{fig:short}
+\end{figure}
+
+\begin{table}[hbt!]
+\centering
+\includegraphics[scale=0.45]{images/Results-Pooling-Method.png}
+\caption{Spearman Corr. by Pooling Methods on STS datasets}
+\label{fig:short}
+\end{table}
 
 \begin{table}[hbt!]
 \centering
@@ -233,41 +287,13 @@ The Github repository for our final project is at: \url{https://github.com/kenne
 
 \begin{table}[hbt!]
 \centering
-\includegraphics[scale=0.57]{images/Bert-distilFACE-size-comparison.png}
+\includegraphics[scale=0.65]{images/Bert-distilFACE-size-comparison.png}
 \caption{Comparison of Model Size}
 \label{fig:short}
 \end{table}
 
-\begin{figure}[hbt!]
-\centering
-\includegraphics[scale=0.3]{images/Results-Evaluation-Score-by-Learning-Rate.png}
-\caption{Spearman Corr. by Learning Rate on STS datasets}
-\label{fig:short}
-\end{figure}
-
-\begin{figure}[hbt!]
-\centering
-\includegraphics[scale=0.30]{images/Results-Evaluation-Score-by-Temp.png}
-\caption{Spearman Corr. by Similarity Temperature on STS datasets}
-\label{fig:short}
-\end{figure}
-
-\begin{figure}[hbt!]
-\centering
-\includegraphics[scale=0.30]{images/Results-Evaluation-Score-by-Batch-Size.png}
-\caption{Spearman Corr. by Batch Size on STS datasets}
-\label{fig:short}
-\end{figure}
-
-\begin{figure}[hbt!]
-\centering
-\includegraphics[scale=0.35]{images/Results-Evaluation-Score-by-Pooling-Methods.png}
-\caption{Spearman Corr. by Pooling Methods on STS datasets}
-\label{fig:short}
-\end{figure}
-
 \begin{table}[hbt!]
-\includegraphics[scale=0.57]{images/Contributions.png}
+\includegraphics[scale=0.5]{images/Contributions.png}
 \caption{Team member contributions}
 \label{fig:short}
 \end{table}
