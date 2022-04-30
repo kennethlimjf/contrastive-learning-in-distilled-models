@@ -24,7 +24,7 @@
 \author{
 Valerie Lim \\ {\tt\small vlim31@gatech.edu}
 \and
-Ng Kai Wen \\ {\tt\small kng71@gatech.edu}
+Kai Wen Ng \\ {\tt\small kng71@gatech.edu}
 \and
 Kenneth Lim \\ {\tt\small klim83@gatech.edu}
 \date{\today}
@@ -37,7 +37,7 @@ Kenneth Lim \\ {\tt\small klim83@gatech.edu}
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-    Pretrained word embedding Natural Language Processing (NLP) models like BERT are able to provide state of the art results for many NLP tasks, but the area of Semantic Textual Similarity (STS) is a notable exception. Contrastive learning has been shown to help improve the quality of sentence embeddings produced, but these models are often large, since they use BERTbase or RoBERTa as pretrained models. Knowledge distillation meanwhile could address this by making models more lightweight. Hence, to reap both of these benefits, we seek to apply a suitable contrastive learning method based on the SimCSE paper, to a model architecture adapted from a knowledge distillation based model, DistilBERT, in an unsupervised setting. We also engage in extensive hyperparameter tuning, experiment with different pooling layers and automatic mixed precision to boost performance and efficiency. Our final lightweight model DistilFACE achieves an average of 72.1\% in Spearman’s correlation on STS tasks, a 34.2\% improvement over BERTbase with the default parameters.
+    Pretrained word embedding Natural Language Processing (NLP) models like BERT can provide state of the art results for many NLP tasks, but the area of Semantic Textual Similarity (STS) is a notable exception. Contrastive learning has been shown to help improve the quality of sentence embeddings produced, but these models are often large, since they use BERTbase or RoBERTa as pretrained models. Knowledge distillation meanwhile could address this by making models more lightweight. Hence, to reap both of these benefits, we seek to apply a suitable contrastive learning method based on the SimCSE paper, to a model architecture adapted from a knowledge distillation based model, DistilBERT, in an unsupervised setting. We also engage in extensive hyperparameter tuning, plus experiment with different pooling layers,automatic mixed precision and quantization to boost performance and efficiency. Our final lightweight model DistilFACE achieves an average of 72.1 in Spearman’s correlation on STS tasks, a 34.2\% improvement over BERTbase with default parameters.
 \end{abstract}
 
 
@@ -46,16 +46,16 @@ Kenneth Lim \\ {\tt\small klim83@gatech.edu}
 
 \subsection{Problem Statement}
 
-Pre-trained word embeddings are a vital part of natural language processing (NLP) systems, providing state of the art results for many NLP tasks  as the pre-trained embedding-based models consistently outperform alternatives such as the embedding-layer-based Word2Vec \cite{farahmand}. Accurate word embeddings have huge downstream benefits for tasks related to information retrieval and semantic similarity comparison \cite{2105.11741}, especially in a typical industrial setting where labelled data is scarce. As a result, in recent years, word embeddings from pre-trained models such as BERT (Bidirectional Encoder Representations from Transformers) have been gaining traction in many NLP works.
+Pre-trained word embeddings are a vital part of natural language processing (NLP) systems, providing state of the art results for many NLP tasks  as the pre-trained embedding-based models frequently outperform alternatives such as the embedding-layer-based Word2Vec \cite{farahmand}. Accurate word embeddings have huge downstream benefits for tasks related to information retrieval and semantic similarity comparison \cite{2105.11741}, especially in a typical industrial setting where labelled data is scarce. As a result, in recent years, word embeddings from pre-trained models such as BERT (Bidirectional Encoder Representations from Transformers) have been gaining traction in many NLP works.
 
 However, studies \cite{2104.08821} \cite{2105.11741} have shown that BERT does not produce good enough embeddings for semantic textual similarity tasks. As a result, recent breakthroughs \cite{2104.08821} \cite{1907.11692} have found that a contrastive objective is able to address the anisotropy issue of BERT. At a high level, contrastive learning is a technique where given two augmented samples of \(x\), \(x+\) (positive sample), \(x-\) (negative sample), we'd like for \(x+\) to be close to \(x\) and for \(x-\) to be far away from \(x\). This improves the quality of BERT sentence representation. 
 
 Yet, a problem often associated with BERT and the contrastive loss models derived off it is their large size. There is an increasing need to build machine learning systems that can operate on the edge, instead of calling a cloud API, in order to build privacy respecting systems and prevent having users send sensitive information to servers \cite{10.3390/s22020450}. Thus, there is a growing impetus for lightweight and responsive models. However, most of the pre-trained models \cite{2104.08821} \cite{2105.11741} with contrastive loss are still relatively large and computationally heavy, making it hard to deploy on the edge. Deployment on the edge would also allow for reduced time and network latency, which could be critical in certain use cases such as when there is a high QOS (Quality of Service) requirement \cite{10.3390/s22020450}. A common solution for creating lighter models is via knowledge distillation, where a trained, complex teacher model trains  a lighter, shallower student model to generalise \cite{1910.01108}.
-Hence, our goal was to address this joint problem of lack of lightweight models that can perform well on semantic textual similarity tasks, by creating an unsupervised pretrained model that combines knowledge distillation and contrastive learning to address their respective problems.  To do this, we first adopt the architecture and pre-trained checkpoints of a knowledge distillation based model, DistilBERT, to reduce the size of our model. We then adapt from authors who successfully implemented contrastive learning on sentence embeddings via unsupervised learning \cite{2104.08821}, by feeding samples, termed as \(x\), into the pre-trained encoder twice: by applying standard dropout twice to obtain two different sets of embeddings termed as \(x+\). Then we take other sentences in the same mini-batch as \(x-\) and the model predicts the positive sample among the negatives. (adapt SimCSE Fig 1a). We subsequently experiment with different pooling layers, automatic mixed precision and hyperparameter tuning to enhance performance.
+Hence, our goal was to address this joint problem of lack of lightweight models that can perform well on semantic textual similarity tasks, by creating an unsupervised pretrained model that combines knowledge distillation and contrastive learning to address their respective problems.  To do this, we first adopt the architecture and pre-trained checkpoints of a knowledge distillation based model, DistilBERT, to reduce the size of our model. We then adapt from authors who successfully implemented contrastive learning on sentence embeddings via unsupervised learning \cite{2104.08821}, by feeding samples, termed as \(x\), into the pre-trained encoder twice: by applying standard dropout twice to obtain two different sets of embeddings termed as \(x+\). Then we take other sentences in the same mini-batch as \(x-\) and the model predicts the positive sample among the negatives. (adapt SimCSE Fig 1a). We subsequently experiment with different pooling layers, automatic mixed precision, quantization and hyperparameter tuning to enhance performance.
 
 \subsection{Implications}
 
-Our group believes there is significant value in experimenting with whether a traditional knowledge distillation method like DistilBERT, can be directly adapted to be combined with an existing contrastive learning method such as SimCSE, without having to create an entirely new model. Such an approach makes such a combination of techniques more accessible. In addition, there are definitely environmental and economical benefits to doing so, given how computational intensive large-scale pretraining of new models are. For instance, 16 TPU chips were required to train BERTbase, with each round of pretraining taking 4 days \cite{1810.04805}, costing about US\$6,912 each time \cite{cost.sota.ai}. Furthermore, success in our project will enable the creation of lightweight pre-trained embedding-based models that work well in semantic textual similarity tasks. This has many applications, such as searching and ranking of relevant documents based on similarity \cite{robust.sts}, and now it could be even further applied in edge scenarios. For example, such functionality can now be enabled at sensitive government, defence or health institutions, where computers might not be allowed to be connected to the cloud freely \cite{1910.01108}.
+Our group believes there is significant value in experimenting with whether a traditional knowledge distillation method like DistilBERT, can be directly adapted to be combined with an existing contrastive learning method such as SimCSE, without having to create an entirely new model. Such an approach makes such a combination of techniques more accessible. In addition, there are definitely environmental and economical benefits to doing so, given how computational intensive large-scale pretraining of new models are. For instance, 16 TPU chips were required to train BERTbase, with each round of pretraining taking 4 days \cite{1810.04805}, costing about US\$6,912 each time \cite{cost.sota.ai}. Furthermore, success in our project will enable the creation of lightweight pre-trained embedding-based models that work well in semantic textual similarity tasks. This has many applications, such as searching and ranking of relevant documents based on similarity \cite{robust.sts}, and now it could be even further applied in edge scenarios. For example, such functionality can now be enabled at sensitive government, defence or health institutions, where computers are not always allowed to be connected to the cloud freely \cite{1910.01108}.
 
 %%%%%%%%% RELATED WORK
 \section{Related Work}
@@ -66,11 +66,11 @@ SimCSE \cite{2104.08821} presented a simple contrastive learning framework that 
 
 \subsection{Knowledge Distillation Models}
 
-In the present work, contrastive learning is applied on a distilled version of BERT, DistilBERT. Sanh et. al \cite{1910.01108} was able to reduce BERT model size by 40\% while retaining 97\% of language understanding capabilities by leveraging on knowledge distillation. DistilBERT is able to retain a significant extent of model performance despite a huge reduction of memory footprint because of the benefits conferred from knowledge distillation. In knowledge distillation, DistilBERT is known as the student, while BERT is known as the teacher. Both have the same architecture. For instance, given this sample input sentence ``the \textless mask \textgreater licked its fur and howled'', the teacher model outputs ``dog'' as the mask, but ``wolf'' and ``fox'' also have high scores. The distillation loss between the teacher and the student aims to align the probability distributions, rather than just the hard predictions, which is the output from the teacher model. The probability distribution is a useful addition as the student is able to learn to rank ``wolf'' and ``dog'' highly, which is useful info about the world \cite{1910.01108}.
+In our present work, contrastive learning is applied on a distilled version of BERT, DistilBERT. Sanh et. al \cite{1910.01108} was able to reduce BERT model size by 40\% while retaining 97\% of language understanding capabilities by leveraging on knowledge distillation. DistilBERT is able to retain a significant extent of model performance despite a huge reduction of memory footprint because of the benefits conferred from knowledge distillation. In knowledge distillation, DistilBERT is known as the student, while BERT is known as the teacher. Both have the same architecture. For instance, given this sample input sentence ``the \textless mask \textgreater licked its fur and howled'', the teacher model outputs ``dog'' as the mask, but ``wolf'' and ``fox'' also have high scores. The distillation loss between the teacher and the student aims to align the probability distributions, rather than just the hard predictions, which is the output from the teacher model. The probability distribution is a useful addition as the student is able to learn to rank ``wolf'' and ``dog'' highly, which is useful info about the world \cite{1910.01108}.
 
 \subsection{Combining Contrastive Learning with Knowledge Distillation}
 
-The core key elements of contrastive learning are augmentation techniques to create positive samples, hard negative mining techniques to create negative samples, and sufficiently large batch size \cite{2002.05709}. We hypothesise that there is nothing inherent about these properties that would prevent contrastive learning’s effective use when applied together to DistilBERT instead of BERT.  We believe that it would be especially meaningful to pursue this combination of contrastive learning and knowledge distillation techniques as these were the two methods that were highlighted as the most dominant and effective surrogate tasks used in unsupervised learning and self supervised learning in the lectures \cite{gatech}.
+The core key elements of contrastive learning are augmentation techniques to create positive samples, hard negative mining techniques to create negative samples, and sufficiently large batch size \cite{2002.05709}. We hypothesise that there is nothing inherent about these properties that would prevent contrastive learning’s effective use when applied to DistilBERT instead of BERT.  We believe that it would be especially meaningful to pursue this combination of contrastive learning and knowledge distillation techniques as these were the two methods that were highlighted as the most dominant and effective surrogate tasks used in unsupervised learning and self supervised learning in the lectures of the deep learning class at Georgia Tech. \cite{gatech}.
 
 There has been some work done today to combine the two techniques.  The Contrastive Distillation on Intermediate Representations (CoDIR) framework \cite{2009.14167} uses contrastive learning to distil the teacher’s hidden states to the student through three objectives, an original training objective, a  distillation objective, and an additional contrastive learning objective where the student is trained to distil knowledge through intermediate layers of the teacher. However, this utilisation of both teacher’s output layer and its intermediate layers for student model training is a deviation from traditional knowledge distillation methods, and involves the creation of a new framework.This differs from our intention of checking compatibility of existing methods.  This framework is also instead applied directly on RoBERTa,  and is more complex to implement.  In addition the main objective of applying contrastive learning in CODIR is to compress BERT \cite{2009.14167}, whereas for us the compression is mainly done through the use of DistilBERT, and application of contrastive learning is mainly for enhancing performance.
 
@@ -122,7 +122,9 @@ To measure success, after hyperparameter tuning is complete, the best hyperparam
 
 \subsection{Further Enhancements}
 
-To make our model even more efficient and require less GPU memory, we also adopted the use of Automatic Mixed Precision (AMP). Instead of always storing weights and biases in 32-bit float format, 16 bit is sometimes used instead, such as when there are. This process of autocasting to lower precision where appropriate reduces wastage of GPU memory. An initial issue faced was that performance was noticeably worse. However, we realized that this was likely due to underflow, as the gradients can become too small to be stored via this format. This can be managed by applying a scaling factor to gradients. The difference made by this scaling factor improved average scores across benchmarks by 5.6\%. Overall, utilizing AMP resulted in a speed up of about 1.4x for training with a batch size of 64, to up to 3.2x for batch size of 256, and meant we needed a maximum of 8GB in GPU memory during our training process, enabling local training in line with our secondary project objectives.
+To make our model even more efficient and require less GPU memory, we also adopted the use of Automatic Mixed Precision (AMP). Instead of always storing weights and biases in 32-bit float format, 16 bit is sometimes used instead, such as when there are. This process of autocasting to lower precision where appropriate reduces wastage of GPU memory. An initial issue faced was that performance was noticeably worse. However, we realized that this was likely due to underflow, as the gradients can become too small to be stored via this format. This can be managed by applying a scaling factor to gradients. The difference made by this scaling factor increased average scores across benchmarks by 8.6\%. Overall, utilizing AMP resulted in a speed up of about 1.4x for training with a batch size of 64, to up to 3.2x for batch size of 256, and meant we needed a maximum of 8GB in GPU memory during our training process, enabling local training in line with our secondary project objectives.
+
+We also managed to further reduce the model's size by 52\% through quantization. This involved converting a floating point model’s weights and activations to reduced precision integers post-training.  However, this reduced model performance by about 6.9\% on average. Hence, we decided to stop pursuing this trade-off further, and instead focus on our core metric of model performance.
 
 
 %%%%%%%%% RESULTS & ANALYSIS
@@ -137,20 +139,14 @@ We compare the evaluation results of our final DistilFACE model with other model
 \label{fig:short}
 \end{figure}
 
-From the above, we can clearly see that our application of contrastive learning to DistilBERT has been clearly successful based on our primary success metric of improved performance across STS tasks. DistilFACE was able to perform on average 34.2\% and 23.8\% higher in Spearman Correlation compared to BERT and DistilBERT respectively. We have also achieved our secondary goal of building a lightweight model, since DistilFACE, which is based on DistilBERT, is significantly smaller and faster than BERT \cite{1910.01108} (shown in figure below).
+ We can see that our application of contrastive learning to DistilBERT has been clearly successful, with DistilFACE performing on average 34.2\% and 23.8\% higher in Spearman Correlation compared to BERT and DistilBERT respectively. We have also achieved our secondary goal of building a lightweight model, since DistilFACE, which is based on DistilBERT, is significantly smaller and faster than BERT \cite{1910.01108} (shown in Appendix Table 2).  In fact, DistilFace and quantized DistilFACE are respectively 1.64 and 3.15 times smaller than the BERT implementation (shown in Appendix Table 3). 
 
-\begin{table}[hbt!]
-\centering
-\includegraphics[scale=0.57]{images/Bert-distilbert-comparison.png}
-\caption{Difference in size and inference time between BERT and DistillBERT. Inference time of a full pass of STS-B on CPU with batch size of 1}
-\label{fig:short}
-\end{table}
 
-We believe that our experiments were successful for two key reasons. The first is that our hypothesis in section 2.3 that the properties of contrastive learning are compatible with DistilBERT is logically sound. The second is effective hyperparameter tuning and experimentation with pooling methods enabled good performance. We detail the results and analysis of that process below.
+We believe that our experiments were successful for two key reasons. The first, is that our hypothesis in section 2.3 that the properties of contrastive learning are compatible with DistilBERT is logically sound. The second, is effective hyperparameter tuning and experimentation with pooling methods enabled good performance. We detail the results and analysis of that process below.
 
 \subsection{Hyperparameter tuning}
 
-These are the hyperparameters that we tuned: Similarity Temperature, batch size, learning rate and pooling method. Each hyperparameter is tested against their selected set of values, which are adapted from \cite{2104.08821}. The optimal hyperparameters and evaluation score by training steps is shown below:
+These are the hyperparameters that we tuned: Similarity Temperature, Batch Size, Learning Rate and Pooling Method. Each hyperparameter is tested against their selected set of values, which are adapted from \cite{2104.08821}. The optimal hyperparameters and evaluation score by training steps is shown below:
 
 \begin{figure}[hbt!]
 \centering
@@ -168,22 +164,22 @@ These are the hyperparameters that we tuned: Similarity Temperature, batch size,
 
 \subsection{Challenges Faced}
 
-A problem we encountered was when we sought to experiment with hyperparameter tuning frameworks like Ray and Optuna to enable more sophisticated methods. We did not anticipate issues as there are examples of successful applications to BERT models. However, these frameworks were found to be incompatible with our use case. Firstly, the trainer required labels from the dataset by default, which is not applicable for our unsupervised model. This caused the ``compute\_ metric'' function to be ignored by the tuning framework, which is not ideal given that we require the use of the SentEval toolkit for evaluation. Secondly, our custom model in evaluation mode also does not directly output evaluation loss either, instead such metrics are calculated separately outside the model via the SentEval toolkit. This toolkit is also rather complex to be practically integrated within the requirements of the ``compute\_metric'' function.
+A problem we encountered was during experimentation with hyperparameter tuning frameworks like Ray and Optuna to enable more sophisticated methods. We did not anticipate issues as there are examples of successful applications to BERT models. However, these frameworks were found to be incompatible with our use case. Firstly, the trainer required labels from the dataset by default, which is not applicable for our unsupervised model. This caused the ``compute\_ metric'' function to be ignored by the tuning framework, which is not ideal given that we require the use of the SentEval toolkit for evaluation. Secondly, our custom model in evaluation mode does not directly output evaluation loss. Instead such metrics are calculated separately outside the model via the SentEval toolkit, which is too complex to be integrated directly.
 
-Hence, we instead adopt the grid-search methodology adopted by the authors in \cite{2104.08821}. Each set of hyperparameter values are used in training for 30,000 steps, and then evaluated independently on these 5 datasets described above. We selected this number of steps as we found training loss to be stable by this threshold across the different hyperparameters (Appendix Figure<> for training loss). This reasonable amount of steps also meant that using grid search proved sufficient, as gains from sophisticated methods like parallelisation via Ray and Optuna would be more limited.
+Hence, we instead adopt the grid-search methodology adopted by the authors in \cite{2104.08821}. Each set of hyperparameter values are used in training for 30,000 steps, and then evaluated independently on these 5 datasets described above. We selected this number of steps as we found training loss to be stable by this threshold across the different hyperparameters. This reasonable amount of steps also meant that using grid search proved sufficient, as gains from sophisticated methods like parallelisation via Ray and Optuna would be more limited.
 
 
 \subsection{Learning Rate}
 
-Learning rates of 1e-5, 3e-5 and 5e-5 were selected as hyperparameter values as adapted from \cite{2104.08821}. Learning rate of 1e-5 is chosen as it resulted in the best average Spearman correlation across the 5 datasets, as highlighted in the yellow bar (see Figure 5 in appendix B). The figure also shows that smaller the learning rate, the greater the Spearman correlation.
+Learning rates of 1e-5, 3e-5 and 5e-5 were selected as hyperparameter values as adapted from \cite{2104.08821}. Learning rate of 1e-5  resulted in the best average Spearman correlation, as highlighted in the yellow bar in Figure 5, Appendix B. The figure also shows that smaller the learning rate, the greater the Spearman correlation.
 
 \subsection{Similarity Temperature}
 
-Temperatures of 0.001, 0.01, 0.05, 0.1, 1 were tested, with 0.05 being chosen as it resulted in the best average Spearman correlation across the 5 datasets, as shown in Figure <>.  This parameter scales the inner product between two normed feature embeddings\cite{2112.01642} when calculating the training objective. Temperature controls how sensitive the objective is to specific embedding locations \cite{2110.04403}. As such this value needs to be neither too large nor small, and in this scenario optimally at 0.05, as highlighted in the yellow bar (see Figure 6 in appendix B).
+Temperatures of 0.001, 0.01, 0.05, 0.1, 1 were tested, with 0.05 achieving the best average Spearman correlation scores. (see as Figure 6 in Appendix B). This parameter scales the inner product between two normed feature embeddings\cite{2112.01642} when calculating the training objective. Temperature controls how sensitive the objective is to specific embedding locations \cite{2110.04403}. As such this value needs to be neither too large nor small, and in this scenario optimally at 0.05, as highlighted in the yellow bar (see Figure 6 in appendix B).
 
 \subsection{Batch Size}
 
-Batch sizes of 64, 128, 256 were tested. Batch size of 128 is chosen as it resulted in the best average Spearman correlation across the 5 datasets, as highlighted in the yellow bar (see Figure 8 in appendix B). However, as can also be seen from this figure, the model is not too sensitive to batch sizes provided a suitable learning rate is used, consistent with the findings from \cite{2104.08821}. This provides further validates that contrastive learning need not require very large batch sizes \cite{2104.08821}, unlike what was previously thought\cite{2002.05709}. This also further supports our overarching hypothesis that contrastive learning is suitable to be applied to more light weight models.
+Batch sizes of 64, 128, 256 were tested, with size 128 achieving the best average Spearman correlation scores, as highlighted in the yellow bar (see Figure 7 in Appendix B). However, this figure also shows that the model is not too sensitive to batch sizes if a suitable learning rate is used, consistent with the findings from \cite{2104.08821}. This further validates that contrastive learning need not require very large batch sizes \cite{2104.08821}, unlike what was previously thought\cite{2002.05709}. This also further supports our overarching hypothesis that contrastive learning is suitable to be applied to more light weight models.
 
 \subsection{Pooling Methods}
 
@@ -201,14 +197,29 @@ We experimented with various pooling methods taking reduce functions: average an
 %%%%%%%%% CONCLUSION
 \section{Conclusion}
 
-Overall, we believe our project to be a success using the success metrics  in section 4.1, namely Spearman Correlation on STS tasks. This can be seen from the results and rationale in section 5 . Hence we hope our DistilFACE model can help lay the groundwork for future work involving building lightweight models for such tasks using contrastive and knowledge distillation.
+Overall, we believe our project to be a success using the success metrics  in section 4.1, namely Spearman Correlation on STS tasks. This can be seen from the results and rationale in section 5 . Hence we hope our DistilFACE model can help lay the groundwork for future work involving the building of lightweight models for such tasks using contrastive learning and knowledge distillation.
 
 
 %%%%%%%%% CONCLUSION
 \begin{appendices}
         \section{Project Code Repository}
         The Github repository for our final project is at:
-        \section{Charts}
+        \section{Tables and Charts}
+
+\begin{table}[hbt!]
+\centering
+\includegraphics[scale=0.57]{images/Bert-distilbert-comparison.png}
+\caption{Difference in number of parameters and inference time between BERT and DistillBERT. Inference time of a full pass of STS-B on CPU with batch size of 1}
+\label{fig:short}
+\end{table}
+
+\begin{table}[hbt!]
+\centering
+\includegraphics[scale=0.57]{images/Bert-distilFACE-size-comparison.png}
+\caption{Comparison of Model Size}
+\label{fig:short}
+\end{table}
+
 \begin{figure}[hbt!]
 \centering
 \includegraphics[scale=0.3]{images/Results-Evaluation-Score-by-Learning-Rate.png}
